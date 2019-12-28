@@ -1,0 +1,5 @@
+package com.programmerfriend.unsplash.usecases.gateways
+
+import com.programmerfriend.unsplash.usecases.images.GetAllImagesUseCase
+
+interface UnsplashRepository : GetAllImagesUseCase.UnsplashImageRepository
