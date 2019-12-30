@@ -5,7 +5,7 @@ import com.programmerfriend.unsplash.delivery.rest.imp.ImagesResourceImp
 import com.programmerfriend.unsplash.usecases.UseCaseExecutor
 import com.programmerfriend.unsplash.usecases.UseCaseExecutorImp
 import com.programmerfriend.unsplash.usecases.gateways.UnsplashRepository
-import com.programmerfriend.unsplash.usecases.images.GetAllImagesUseCase
+import com.programmerfriend.unsplash.usecases.images.GetNewImagesUseCase
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
@@ -13,15 +13,16 @@ import org.springframework.context.annotation.Configuration
 class Module {
 
     @Bean
-    fun imagesResourceImp(useCaseExecutor: UseCaseExecutor, getAllImagesUseCase: GetAllImagesUseCase) =
-        ImagesResourceImp(useCaseExecutor, getAllImagesUseCase)
+    fun imagesResourceImp(useCaseExecutor: UseCaseExecutor, getNewImagesUseCase: GetNewImagesUseCase) =
+        ImagesResourceImp(useCaseExecutor, getNewImagesUseCase)
 
     @Bean
     fun useCaseExecutor() = UseCaseExecutorImp()
 
     @Bean
-    fun getAllImagesUseCase(unsplashRepository: UnsplashRepository) = GetAllImagesUseCase(unsplashRepository)
+    fun getNewImagesUseCase(unsplashRepository: UnsplashRepository) = GetNewImagesUseCase(unsplashRepository)
 
     @Bean
     fun unsplashRepository() = UnsplashImageRestRepository()
+
 }

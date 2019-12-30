@@ -1,30 +1,47 @@
 package com.programmerfriend.unsplash.usecases
 
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.CompletionStage
+import org.reactivestreams.Publisher
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 
-interface UseCase<in Request, out Response> {
-    fun execute(request: Request): Response
+interface UseCase<in Request, Response> {
+    fun execute(request: Request): Publisher<Response>
 }
 
 interface UseCaseExecutor {
-    operator fun <RequestDto, ResponseDto, Request, Response> invoke(
+    fun <RequestDto, ResponseDto, Request, Response> executeForMono(
         useCase: UseCase<Request, Response>,
         requestDto: RequestDto,
-        requestConverter: (RequestDto) -> Request,
-        responseConverter: (Response) -> ResponseDto
-    ): CompletionStage<ResponseDto>
+        requestConverter: (RequestDto) -> Mono<Request>,
+        responseConverter: (Response) -> Mono<ResponseDto>
+    ): Mono<ResponseDto>
+
+    fun <RequestDto, ResponseDto, Request, Response> executeForFlux(
+        useCase: UseCase<Request, Response>,
+        requestDto: RequestDto,
+        requestConverter: (RequestDto) -> Flux<Request>,
+        responseConverter: (Response) -> Flux<ResponseDto>
+    ): Flux<ResponseDto>
 }
 
 class UseCaseExecutorImp : UseCaseExecutor {
-    override operator fun <RequestDto, ResponseDto, Request, Response> invoke(
+    override fun <RequestDto, ResponseDto, Request, Response> executeForMono(
         useCase: UseCase<Request, Response>,
         requestDto: RequestDto,
-        requestConverter: (RequestDto) -> Request,
-        responseConverter: (Response) -> ResponseDto
-    ): CompletionStage<ResponseDto> =
-        CompletableFuture
-            .supplyAsync { requestConverter(requestDto) }
-            .thenApplyAsync { useCase.execute(it) }
-            .thenApplyAsync { responseConverter(it) }
+        requestConverter: (RequestDto) -> Mono<Request>,
+        responseConverter: (Response) -> Mono<ResponseDto>
+    ): Mono<ResponseDto> =
+        requestConverter(requestDto)
+            .flatMap { useCase.execute(it) as Mono }
+            .flatMap { responseConverter(it) }
+
+    override fun <RequestDto, ResponseDto, Request, Response> executeForFlux(
+        useCase: UseCase<Request, Response>,
+        requestDto: RequestDto,
+        requestConverter: (RequestDto) -> Flux<Request>,
+        responseConverter: (Response) -> Flux<ResponseDto>
+    ): Flux<ResponseDto> =
+        requestConverter(requestDto)
+            .flatMap { useCase.execute(it) }
+            .flatMap { responseConverter(it) }
 }
